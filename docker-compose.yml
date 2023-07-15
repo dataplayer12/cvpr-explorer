@@ -1,0 +1,9 @@
+version: '3.4'
+
+services:
+  cvprexplorer:
+    image: cvprexplorer
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    network_mode: host
