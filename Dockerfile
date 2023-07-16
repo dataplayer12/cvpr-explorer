@@ -10,6 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y wget curl unzip gnupg
+RUN apt-get update && apt-get install -y libgconf-2-4 libX11-xcb1 libXext6 libXss1 libxcb1
 
 # Install pip requirements
 COPY requirements.txt .
