@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.chrome import ChromeDriverManager, ChromeType
 from bs4 import BeautifulSoup
 import json
 import time
@@ -33,10 +33,11 @@ chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--remote-debugging-port=9222")  # This line should help
 
 # Choose Chrome Browser
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+# driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+driver = webdriver.Chrome(service=Service(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install()), options=chrome_options)
+missing=[]
 
-
-for year in range(2013, 2024):
+for year in range(2022, 2023):
     data = []
     urls=yeartourl[year]
     print()
@@ -46,6 +47,7 @@ for year in range(2013, 2024):
     print()
     
     for url in urls:
+
         driver.get(url)
 
         # Find all paper links
@@ -57,25 +59,30 @@ for year in range(2013, 2024):
         # paper_urls = paper_urls[:10]
 
         for idx, paper_url in enumerate(paper_urls):
-            driver.get(paper_url)
+            try:
+                driver.get(paper_url)
 
-            # Wait for the new page to load
-            time.sleep(2)
+                # Wait for the new page to load
+                time.sleep(2)
 
-            # Parse the new page with BeautifulSoup
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
+                # Parse the new page with BeautifulSoup
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-            # Find the title, abstract, and PDF link
-            title = soup.find('div', id='papertitle').text.strip()
-            print(f"Processing paper {idx+1} of {len(paper_urls)}: {title}")
-            abstract = soup.find('div', id='abstract').text.strip()
-            pdf_link = 'https://openaccess.thecvf.com/' + soup.find('a', text='pdf')['href']
-            
-            data.append({
-                'title': title,
-                'abstract': abstract,
-                'pdf_link': pdf_link
-            })
+                # Find the title, abstract, and PDF link
+                title = soup.find('div', id='papertitle').text.strip()
+                print(f"Processing paper {idx+1} of {len(paper_urls)}: {title}")
+                abstract = soup.find('div', id='abstract').text.strip()
+                pdf_link = 'https://openaccess.thecvf.com/' + soup.find('a', text='pdf')['href']
+
+                data.append({
+                    'title': title,
+                    'abstract': abstract,
+                    'pdf_link': pdf_link
+                })
+
+            except Exception as e:
+                print(f'Error {str(e)}')
+                missing.append(url)
 
 
     with open(f'data/cvpr_{year}_papers.json', 'w') as f:
@@ -83,3 +90,5 @@ for year in range(2013, 2024):
 
 
 driver.quit()
+print('Please manually download some papers from these urls:')
+print(missing)
