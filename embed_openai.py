@@ -3,13 +3,6 @@ import json
 import numpy as np
 import uc
 
-# Load the data from the JSON file
-with open('cvpr_2023_papers.json', 'r') as f:
-    data = json.load(f)
-
-# Extract the abstracts
-abstracts = [paper['abstract'] for paper in data]
-
 # Your OpenAI API key
 api_key = uc.NOT_OAI_API
 
@@ -22,29 +15,39 @@ headers = {
     'Authorization': f'Bearer {api_key}'
 }
 
-# Generate embeddings for each abstract
-embeddings = []
-for abstract in abstracts:
-    # The data for the API request
-    data = {
-        'input': abstract,
-        'model': 'text-embedding-ada-002'
-    }
+for year in range(2021, 2023):
+    print(f'Processing papers for CVPR {year}')
+    # Load the data from the JSON file
+    with open(f'data/cvpr_{year}_papers.json', 'r') as f:
+        data = json.load(f)
 
-    # Make the API request
-    response = requests.post(url, headers=headers, data=json.dumps(data))
+    # Extract the abstracts
+    abstracts = [paper['abstract'] for paper in data]
 
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Extract the embedding from the response
-        embedding = response.json()['data'][0]['embedding']
-        embeddings.append(embedding)
-    else:
-        print(f'Error: {response.status_code}')
-        print(response.text)
+    # Generate embeddings for each abstract
+    embeddings = []
+    for (idx,abstract) in enumerate(abstracts):
+        print(f'Processing abstract {idx+1} of {len(abstracts)}')
+        # The data for the API request
+        data = {
+            'input': abstract,
+            'model': 'text-embedding-ada-002'
+        }
 
-# Convert the list of embeddings to a NumPy array
-embeddings = np.array(embeddings)
+        # Make the API request
+        response = requests.post(url, headers=headers, data=json.dumps(data))
 
-# Save the embeddings to a .npy file
-np.save('cvpr_2023_embeddings_openai.npy', embeddings)
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Extract the embedding from the response
+            embedding = response.json()['data'][0]['embedding']
+            embeddings.append(embedding)
+        else:
+            print(f'Error: {response.status_code}')
+            print(response.text)
+
+    # Convert the list of embeddings to a NumPy array
+    embeddings = np.array(embeddings)
+
+    # Save the embeddings to a .npy file
+    np.save(f'data/cvpr_{year}_embeddings_openai.npy', embeddings)
