@@ -158,6 +158,15 @@ app.layout = html.Div(
                 html.Div(id='pdf-link'),
                 html.Div(id='title'),
                 html.Div(id='abstract'),
+                html.Div(
+                    children=[
+                    html.P("This website allows you to explore CVPR papers from 2013-2023"),
+                    html.P("Find similar papers from nearby points on the TSNE plot"),
+                    html.P("Click on a data point to view the title, abstract, and open the PDF link."),
+                    html.P("Use the GitHub and LinkedIn links to view the source code and connect with the developer."),
+                ],
+                style={'color': 'white', 'textAlign': 'center', 'marginTop': '20px'}
+                ),
                 dcc.Link(
                     'GitHub',
                     href='https://github.com/dataplayer12/cvpr-explorer',
