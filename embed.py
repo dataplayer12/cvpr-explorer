@@ -52,11 +52,8 @@ for year in years:
         if not field_found:
             paper_fields[year].append('other')
 
-# Create the Dash application
-app = dash.Dash(__name__)
-
 # Create a scatter plot for a specific year
-def create_scatter_plot(year):
+def calculate_tsne(year):
     # Extract the data for the specified year
     year_data = data[year]
     year_embeddings = embeddings[year]
@@ -79,7 +76,19 @@ def create_scatter_plot(year):
         'abstract': year_abstracts
     })
 
+    return df
+
+# Create the Dash application
+app = dash.Dash(__name__)
+
+#pre-compute all TSNE plots so graphs load quickly
+calculated_tsnes = {
+    year: calculate_tsne(year) for year in years
+}
+
+def create_scatter_plot(year):
     # Create a scatter plot of the embeddings
+    df = calculated_tsnes[year]
     fig = go.Figure()
 
     for field in df['field'].unique():
