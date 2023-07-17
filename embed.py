@@ -80,7 +80,7 @@ def calculate_tsne(year):
 
 # Create the Dash application
 app = dash.Dash(__name__)
-
+app.title = "CVPR Explorer"
 #pre-compute all TSNE plots so graphs load quickly
 calculated_tsnes = {
     year: calculate_tsne(year) for year in years
