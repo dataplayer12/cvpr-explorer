@@ -9,22 +9,21 @@ from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import os
 
-# List of years for which data is available
-years = list(range(2013, 2024))
-
-# Load the spaCy model
-nlp = spacy.load('en_core_web_md')
+cvpr_years = list(range(2013, 2024))
+eccv_years = [2018, 2020, 2022]
 
 # Load the data for all years
 data = {}
 embeddings = {}
-for year in years:
-    # Load the data from the JSON file
-    with open(f'data/cvpr_{year}_papers.json', 'r') as f:
-        data[year] = json.load(f)
-    
-    # Load the embeddings
-    embeddings[year] = np.load(f'data/cvpr_{year}_embeddings_openai.npy')
+for conference in ['cvpr', 'eccv']:
+    years = cvpr_years if conference == 'cvpr' else eccv_years
+    for year in years:
+        # Load the data from the JSON file
+        with open(f'data/{conference}_{year}_papers.json', 'r') as f:
+            data[(conference, year)] = json.load(f)
+        
+        # Load the embeddings
+        embeddings[(conference, year)] = np.load(f'data/{conference}_{year}_embeddings_openai.npy')
 
 # Define the fields and their keywords
 fields = {
@@ -39,26 +38,28 @@ fields = {
 
 # Determine the field of each paper for all years
 paper_fields = {}
-for year in years:
-    abstracts = [paper['abstract'] for paper in data[year]]
-    paper_fields[year] = []
-    for abstract in abstracts:
-        field_found = False
-        for field, keywords in fields.items():
-            if any(keyword in abstract.lower() for keyword in keywords):
-                paper_fields[year].append(field)
-                field_found = True
-                break
-        if not field_found:
-            paper_fields[year].append('other')
+for conference in ['cvpr', 'eccv']:
+    years = cvpr_years if conference == 'cvpr' else eccv_years
+    for year in years:
+        abstracts = [paper['abstract'] for paper in data[(conference, year)]]
+        paper_fields[(conference, year)] = []
+        for abstract in abstracts:
+            field_found = False
+            for field, keywords in fields.items():
+                if any(keyword in abstract.lower() for keyword in keywords):
+                    paper_fields[(conference, year)].append(field)
+                    field_found = True
+                    break
+            if not field_found:
+                paper_fields[(conference, year)].append('other')
 
-# Create a scatter plot for a specific year
-def calculate_tsne(year):
-    # Extract the data for the specified year
-    year_data = data[year]
-    year_embeddings = embeddings[year]
+# Create a scatter plot for a specific conference and year
+def calculate_tsne(conference, year):
+    # Extract the data for the specified conference and year
+    year_data = data[(conference, year)]
+    year_embeddings = embeddings[(conference, year)]
     year_titles = [paper['title'] for paper in year_data]
-    year_fields = paper_fields[year]
+    year_fields = paper_fields[(conference, year)]
     year_pdf_links = [paper['pdf_link'] for paper in year_data]
     year_abstracts = [paper['abstract'] for paper in year_data]
 
@@ -82,13 +83,16 @@ def calculate_tsne(year):
 app = dash.Dash(__name__)
 app.title = "CVPR Explorer"
 #pre-compute all TSNE plots so graphs load quickly
-calculated_tsnes = {
-    year: calculate_tsne(year) for year in years
-}
+calculated_tsnes = {}
+for conference in ['cvpr', 'eccv']:
+    years = cvpr_years if conference == 'cvpr' else eccv_years
+    calculated_tsnes.update({
+    (conference, year): calculate_tsne(conference, year) for year in years
+    })
 
-def create_scatter_plot(year):
+def create_scatter_plot(conference, year):
     # Create a scatter plot of the embeddings
-    df = calculated_tsnes[year]
+    df = calculated_tsnes[(conference, year)]
     fig = go.Figure()
 
     for field in df['field'].unique():
@@ -122,7 +126,7 @@ def create_scatter_plot(year):
         font=dict(
             color="white"
         ),
-    title=f"t-SNE plot of CVPR {year} Paper Embeddings",
+    title=f"t-SNE plot of {conference.upper()} {year} Paper Embeddings",
         title_font=dict(
             size=24
         ),
@@ -138,11 +142,20 @@ app.layout = html.Div(
         html.Div(
             children=[
                 dcc.Dropdown(
+                    id='conference-dropdown',
+                    options=[
+                        {'label': 'CVPR', 'value': 'cvpr'},
+                        {'label': 'ECCV', 'value': 'eccv'}
+                    ],
+                    value='cvpr',
+                    style={'color': 'black', 'backgroundColor': 'black', 'width': '150px'}
+                ),
+                dcc.Dropdown(
                     id='year-dropdown',
                     options=[
-                        {'label': str(year), 'value': year} for year in years
+                        {'label': str(year), 'value': year} for year in cvpr_years
                     ],
-                    value=max(years),
+                    value=max(cvpr_years),
                     style={'color': 'black', 'backgroundColor': 'black', 'width': '150px'}
                 ),
             ],
@@ -150,7 +163,7 @@ app.layout = html.Div(
         ),
         dcc.Graph(
             id='scatter-plot',
-            figure=create_scatter_plot(max(years)),
+            figure=create_scatter_plot('cvpr', max(cvpr_years)),
             style={"height": "80vh"}
         ),
         html.Div(
@@ -160,7 +173,7 @@ app.layout = html.Div(
                 html.Div(id='abstract'),
                 html.Div(
                     children=[
-                    html.P("This website allows you to explore CVPR papers from 2013-2023"),
+                    html.P("This website allows you to explore CVPR and ECCV papers from 2013-2023"),
                     html.P("Find similar papers from nearby points on the TSNE plot"),
                     html.P("Click on a data point to view the title, abstract, and open the PDF link."),
                     html.P("Use the GitHub and LinkedIn links to view the source code and connect with the developer."),
@@ -199,13 +212,26 @@ app.layout = html.Div(
         )
 
 
-# Define a callback that updates the scatter plot based on the selected year
+# Define a callback that updates the year dropdown based on the selected conference
+@app.callback(
+    Output('year-dropdown', 'options'),
+    Input('conference-dropdown', 'value')
+)
+def update_year_dropdown(conference):
+    years = cvpr_years if conference == 'cvpr' else eccv_years
+    return [{'label': str(year), 'value': year} for year in years]
+
+# Define a callback that updates the scatter plot based on the selected conference and year
 @app.callback(
     Output('scatter-plot', 'figure'),
-    Input('year-dropdown', 'value')
+    [Input('conference-dropdown', 'value'), Input('year-dropdown', 'value')]
 )
-def update_scatter_plot(year):
-    return create_scatter_plot(year)
+def update_scatter_plot(conference, year):
+    if (conference.lower(), year) in calculated_tsnes.keys():
+        return create_scatter_plot(conference.lower(), year)
+    else:
+        year = max(cvpr_years) if conference.lower() == 'cvpr' else max(eccv_years)
+        return create_scatter_plot(conference.lower(), year)
 
 
 # Define a callback that updates the PDF link, title, and abstract when a data point is clicked
