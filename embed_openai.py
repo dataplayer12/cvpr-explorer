@@ -2,6 +2,10 @@ import requests
 import json
 import numpy as np
 import uc
+from conf2year import conf2year
+import sys
+
+conference_name = sys.argv[1] if len(sys.argv) > 1 else 'cvpr'
 
 # Your OpenAI API key
 api_key = uc.NOT_OAI_API
@@ -15,10 +19,10 @@ headers = {
     'Authorization': f'Bearer {api_key}'
 }
 
-for year in range(2021, 2023):
-    print(f'Processing papers for CVPR {year}')
+for year in conf2year[conference_name]:
+    print(f'Processing papers for {conference_name} {year}')
     # Load the data from the JSON file
-    with open(f'data/cvpr_{year}_papers.json', 'r') as f:
+    with open(f'data/{conference_name}_{year}_papers.json', 'r') as f:
         data = json.load(f)
 
     # Extract the abstracts
@@ -50,4 +54,4 @@ for year in range(2021, 2023):
     embeddings = np.array(embeddings)
 
     # Save the embeddings to a .npy file
-    np.save(f'data/cvpr_{year}_embeddings_openai.npy', embeddings)
+    np.save(f'data/{conference_name}_{year}_embeddings_openai.npy', embeddings)
