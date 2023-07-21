@@ -42,4 +42,6 @@ docker compose up
 - [ ] Allow searching by keyword
 - [x] Use OpenAI embeddings
 - [x] Add more years, allow selecting year
+- [x] Add ECCV
+- [ ] Add ICCV
 - [ ] Docker image that builds on both arm and x86
