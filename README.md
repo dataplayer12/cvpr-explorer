@@ -1,5 +1,5 @@
 # cvpr-explorer
-Visualize CVPR papers as embeddings
+Visualize CVPR papers as embeddings on [cvprexplorer.com](http://cvprexplorer.com)
 
 # Problem Statement
 As the field of AI and machine learning has exploded in recent years, it has become increasingly difficult to keep up to date with latest research. Conference websites frequently list >2000 papers in one giant list out of which it is not easy to find papers one is interested in.
