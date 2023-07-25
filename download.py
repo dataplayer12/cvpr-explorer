@@ -6,20 +6,32 @@ from bs4 import BeautifulSoup
 import json
 import time
 
+conf_name = 'iccv'
+
 BASE_URL="https://openaccess.thecvf.com/"
 
+#for cvpr
+# yeartopage = {
+#     2023 : ['CVPR2023?day=2023-06-20', 'CVPR2023?day=2023-06-21', 'CVPR2023?day=2023-06-22'],
+#     2022 : ['CVPR2022?day=2022-06-21', 'CVPR2022?day=2022-06-22', 'CVPR2022?day=2022-06-23', 'CVPR2022?day=2022-06-24'],
+#     2021 : ['CVPR2021?day=2021-06-21', 'CVPR2021?day=2021-06-22', 'CVPR2021?day=2021-06-23', 'CVPR2021?day=2021-06-24', 'CVPR2021?day=2021-06-25'],
+#     2020 : ['CVPR2020?day=2020-06-16', 'CVPR2020?day=2020-06-17', 'CVPR2020?day=2020-06-18'],
+#     2019 : ['CVPR2019?day=2019-06-18', 'CVPR2019?day=2019-06-19', 'CVPR2019?day=2019-06-20'],
+#     2018 : ['CVPR2018?day=2018-06-19', 'CVPR2018?day=2018-06-20', 'CVPR2018?day=2018-06-21'],
+#     2017 : ['CVPR2017'],
+#     2016 : ['CVPR2016'],
+#     2015 : ['CVPR2015'],
+#     2014 : ['CVPR2014'],
+#     2013 : ['CVPR2013']
+# }
+
+#for iccv
 yeartopage = {
-    2023 : ['CVPR2023?day=2023-06-20', 'CVPR2023?day=2023-06-21', 'CVPR2023?day=2023-06-22'],
-    2022 : ['CVPR2022?day=2022-06-21', 'CVPR2022?day=2022-06-22', 'CVPR2022?day=2022-06-23', 'CVPR2022?day=2022-06-24'],
-    2021 : ['CVPR2021?day=2021-06-21', 'CVPR2021?day=2021-06-22', 'CVPR2021?day=2021-06-23', 'CVPR2021?day=2021-06-24', 'CVPR2021?day=2021-06-25'],
-    2020 : ['CVPR2020?day=2020-06-16', 'CVPR2020?day=2020-06-17', 'CVPR2020?day=2020-06-18'],
-    2019 : ['CVPR2019?day=2019-06-18', 'CVPR2019?day=2019-06-19', 'CVPR2019?day=2019-06-20'],
-    2018 : ['CVPR2018?day=2018-06-19', 'CVPR2018?day=2018-06-20', 'CVPR2018?day=2018-06-21'],
-    2017 : ['CVPR2017'],
-    2016 : ['CVPR2016'],
-    2015 : ['CVPR2015'],
-    2014 : ['CVPR2014'],
-    2013 : ['CVPR2013']
+    2021 : ['ICCV2021?day=2021-10-12', 'ICCV2021?day=2021-10-13'],
+    2019 : ['ICCV2019?day=2019-10-29', 'ICCV2019?day=2019-10-30', 'ICCV2019?day=2019-10-31', 'ICCV2019?day=2019-11-01'],
+    2017 : ['ICCV2017'],
+    2015 : ['ICCV2015'],
+    2013 : ['ICCV2013']
 }
 
 
@@ -37,12 +49,12 @@ chrome_options.add_argument("--remote-debugging-port=9222")  # This line should 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install()), options=chrome_options)
 missing=[]
 
-for year in range(2022, 2023):
+for year in yeartopage.keys():
     data = []
     urls=yeartourl[year]
     print()
     print('==============================')
-    print(f'Processing papers for CVPR {year}')
+    print(f'Processing papers for {conf_name.upper()} {year}')
     print('==============================')
     print()
     
@@ -85,7 +97,7 @@ for year in range(2022, 2023):
                 missing.append(url)
 
 
-    with open(f'data/cvpr_{year}_papers.json', 'w') as f:
+    with open(f'data/{conf_name}_{year}_papers.json', 'w') as f:
         json.dump(data, f)
 
 
