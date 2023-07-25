@@ -8,15 +8,15 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import os
+from conf2year import conf2year
 
-cvpr_years = list(range(2013, 2024))
-eccv_years = [2018, 2020, 2022]
+conferences=['cvpr', 'eccv', 'iccv']
 
 # Load the data for all years
 data = {}
 embeddings = {}
-for conference in ['cvpr', 'eccv']:
-    years = cvpr_years if conference == 'cvpr' else eccv_years
+for conference in conferences:
+    years = conf2year[conference]
     for year in years:
         # Load the data from the JSON file
         with open(f'data/{conference}_{year}_papers.json', 'r') as f:
@@ -38,8 +38,8 @@ fields = {
 
 # Determine the field of each paper for all years
 paper_fields = {}
-for conference in ['cvpr', 'eccv']:
-    years = cvpr_years if conference == 'cvpr' else eccv_years
+for conference in conferences:
+    years = conf2year[conference]
     for year in years:
         abstracts = [paper['abstract'] for paper in data[(conference, year)]]
         paper_fields[(conference, year)] = []
@@ -84,8 +84,8 @@ app = dash.Dash(__name__)
 app.title = "CVPR Explorer"
 #pre-compute all TSNE plots so graphs load quickly
 calculated_tsnes = {}
-for conference in ['cvpr', 'eccv']:
-    years = cvpr_years if conference == 'cvpr' else eccv_years
+for conference in conferences:
+    years = conf2year[conference]
     calculated_tsnes.update({
     (conference, year): calculate_tsne(conference, year) for year in years
     })
@@ -145,7 +145,8 @@ app.layout = html.Div(
                     id='conference-dropdown',
                     options=[
                         {'label': 'CVPR', 'value': 'cvpr'},
-                        {'label': 'ECCV', 'value': 'eccv'}
+                        {'label': 'ECCV', 'value': 'eccv'},
+                        {'label': 'ICCV', 'value': 'iccv'}
                     ],
                     value='cvpr',
                     style={'color': 'black', 'backgroundColor': 'black', 'width': '150px'}
@@ -153,9 +154,9 @@ app.layout = html.Div(
                 dcc.Dropdown(
                     id='year-dropdown',
                     options=[
-                        {'label': str(year), 'value': year} for year in cvpr_years
+                        {'label': str(year), 'value': year} for year in conf2year['cvpr']
                     ],
-                    value=max(cvpr_years),
+                    value=max(conf2year['cvpr']),
                     style={'color': 'black', 'backgroundColor': 'black', 'width': '150px'}
                 ),
             ],
@@ -163,7 +164,7 @@ app.layout = html.Div(
         ),
         dcc.Graph(
             id='scatter-plot',
-            figure=create_scatter_plot('cvpr', max(cvpr_years)),
+            figure=create_scatter_plot('cvpr', max(conf2year['cvpr'])),
             style={"height": "80vh"}
         ),
         html.Div(
@@ -173,7 +174,7 @@ app.layout = html.Div(
                 html.Div(id='abstract'),
                 html.Div(
                     children=[
-                    html.P("This website allows you to explore CVPR and ECCV papers from 2013-2023"),
+                    html.P("This website allows you to explore CVPR, ECCV and ICCV papers from 2013-2023"),
                     html.P("Find similar papers from nearby points on the TSNE plot"),
                     html.P("Click on a data point to view the title, abstract, and open the PDF link."),
                     html.P("Use the GitHub and LinkedIn links to view the source code and connect with the developer."),
@@ -218,7 +219,7 @@ app.layout = html.Div(
     Input('conference-dropdown', 'value')
 )
 def update_year_dropdown(conference):
-    years = cvpr_years if conference == 'cvpr' else eccv_years
+    years = conf2year[conference.lower()]
     return [{'label': str(year), 'value': year} for year in years]
 
 # Define a callback that updates the scatter plot based on the selected conference and year
@@ -230,7 +231,7 @@ def update_scatter_plot(conference, year):
     if (conference.lower(), year) in calculated_tsnes.keys():
         return create_scatter_plot(conference.lower(), year)
     else:
-        year = max(cvpr_years) if conference.lower() == 'cvpr' else max(eccv_years)
+        year = max(conf2year[conference.lower()])
         return create_scatter_plot(conference.lower(), year)
 
 
