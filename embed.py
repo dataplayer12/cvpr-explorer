@@ -175,10 +175,10 @@ app.layout = html.Div(
                 html.Div(id='abstract'),
                 html.Div(
                     children=[
-                    html.P("This website allows you to explore CVPR, ECCV and ICCV papers from 2013-2023"),
+                    html.P("This site allows you to visualize over 30,000 papers from top computer vision conferences like CVPR, ECCV and ICCV"),
                     html.P("Find similar papers from nearby points on the TSNE plot"),
                     html.P("Click on a data point to view the title, abstract, and open the PDF link."),
-                    html.P("Use the GitHub and LinkedIn links to view the source code and connect with the developer."),
+                    html.P("Use the GitHub and LinkedIn links to view the source code and connect with me. Happy reading :)"),
                 ],
                 style={'color': 'white', 'textAlign': 'center', 'marginTop': '20px'}
                 ),
