@@ -147,7 +147,8 @@ app.layout = html.Div(
                     options=[
                         {'label': 'CVPR', 'value': 'cvpr'},
                         {'label': 'ECCV', 'value': 'eccv'},
-                        {'label': 'ICCV', 'value': 'iccv'}
+                        {'label': 'ICCV', 'value': 'iccv'},
+                        {'label': 'WACV', 'value': 'wacv'}
                     ],
                     value='cvpr',
                     style={'color': 'black', 'backgroundColor': 'black', 'width': '150px'}
