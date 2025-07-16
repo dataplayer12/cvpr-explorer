@@ -10,7 +10,7 @@ from dash.dependencies import Input, Output, State
 import os
 from conf2year import conf2year
 
-conferences=['cvpr', 'eccv', 'iccv']
+conferences=list(conf2year.keys())
 
 # Load the data for all years
 data = {}
@@ -29,10 +29,11 @@ for conference in conferences:
 fields = {
     'object detection': ['object detection'],
     'segmentation': ['segmentation'],
-    'language models': ['language model'],
-    'transformers': ['transformer'],
-    'ViT': ['ViT'],
-    'NeRF': ['radiance field', 'radiance fields', 'NeRF'],
+    'point cloud': ['point cloud'],
+    'LLMs': ['language model'],
+    'ViTs': ['vit', 'vision transformer'],
+    'NeRF': ['radiance field', 'radiance fields', 'nerf'],
+    'Gaussian splatting': ['gaussian splatting', 'splatting'],
     'video': ['video'],
 }
 
