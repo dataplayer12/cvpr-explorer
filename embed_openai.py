@@ -35,7 +35,7 @@ for year in conf2year[conference_name]:
         # The data for the API request
         data = {
             'input': abstract,
-            'model': 'text-embedding-ada-002'
+            'model': 'text-embedding-3-large'
         }
 
         # Make the API request
